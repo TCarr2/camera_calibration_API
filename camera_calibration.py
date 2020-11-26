@@ -187,7 +187,7 @@ class Camera_Calibration_API:
         if save_dir:
             plt.savefig(os.path.join(save_dir,"reprojection_error.png"))
         
-        plt.show()
+        #plt.show()
         print("The Mean Reprojection Error in pixels is:  {}".format(avg_error))
         
     
@@ -310,7 +310,7 @@ class Camera_Calibration_API:
                     vis = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
                     cv2.drawChessboardCorners(vis, (self.pattern_columns,self.pattern_rows), corners2, found)
                     path, name, ext = self._splitfn(img_path)
-                    outfile = os.path.join(self.debug_dir, name + '_pts_vis.png')
+                    outfile = os.path.join(self.debug_dir, name + '_pts_vis.jpg')
                     cv2.imwrite(outfile, vis)
                     
             else:
@@ -697,10 +697,3 @@ if __name__ == "__main__":
     
     calibration_object.visualize_calibration_boards(cam_width=args.cam_width,
                                                     cam_height=args.cam_height)
-    
-    
-    
-        
-
-   
-    
