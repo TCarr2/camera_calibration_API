@@ -11,23 +11,29 @@ path = "C:/Users/Terry/Documents/GitHub/camera_calibration_API"
 print(len(images_path_list))
 
 chessboard_dimensions = (6, 8)  #num rows, num columns
-square_edge_length = 19.94  # mm
-refine = True
-refine_threshold = 0.3
+square_edge_length = 42.50  # mm
+refine = False
+alpha = 1     #between 0 and 1 inclusive
+refine_threshold = 0.20
+
 
 chessboard = Camera_Calibration_API(pattern_type="chessboard", pattern_rows=chessboard_dimensions[1], pattern_columns=chessboard_dimensions[0], distance_in_world_units=square_edge_length, debug_dir=os.path.join(path, "debug"))
 results = chessboard.calibrate_camera(images_path_list)
 
-np.savetxt(os.path.join(path, 'results', 'cam_mtx.txt'), results['intrinsic_matrix'], fmt='%.5f', delimiter=',')
-np.savetxt(os.path.join(path, 'results', 'cam_dist.txt'), results['distortion_coefficients'], fmt='%.5f', delimiter=',')
+np.savetxt(os.path.join(path, 'results', 'rvecs.txt'), results['rvecs'][0], fmt='%.8f', delimiter=',')
+np.savetxt(os.path.join(path, 'results', 'tvecs.txt'), results['tvecs'][0], fmt='%.8f', delimiter=',')
+
+np.savetxt(os.path.join(path, 'results', 'rms.txt'), np.full(1, results['rms']), fmt='%.8f', delimiter=',')
+np.savetxt(os.path.join(path, 'results', 'cam_mtx.txt'), results['intrinsic_matrix'], fmt='%.8f', delimiter=',')
+np.savetxt(os.path.join(path, 'results', 'cam_dist.txt'), results['distortion_coefficients'], fmt='%.8f', delimiter=',')
 
 h, w = cv2.imread(images_path_list[0], 0).shape[:2]
-newcammtx, roi = cv2.getOptimalNewCameraMatrix(results['intrinsic_matrix'], results['distortion_coefficients'], (w,h), 1, (w,h))
+newcammtx, roi = cv2.getOptimalNewCameraMatrix(results['intrinsic_matrix'], results['distortion_coefficients'], (w,h), alpha, (w,h))
 mapx, mapy = cv2.initUndistortRectifyMap(results['intrinsic_matrix'], results['distortion_coefficients'], None, newcammtx, (w,h), 5)
 print("New Camera Matrix: \n")
 print(newcammtx)
 
-np.savetxt(os.path.join(path, 'results', 'cam_mtx_new.txt'), newcammtx, fmt='%.5f', delimiter=',')
+np.savetxt(os.path.join(path, 'results', 'cam_mtx_new.txt'), newcammtx, fmt='%.8f', delimiter=',')
 np.savetxt(os.path.join(path, 'results', 'roi.txt'), roi, fmt='%i', delimiter=',')
 
 for image in images_path_list:
@@ -56,16 +62,17 @@ if refine:
     refined_chessboard = Camera_Calibration_API(pattern_type="chessboard", pattern_rows=chessboard_dimensions[1], pattern_columns=chessboard_dimensions[0], distance_in_world_units=square_edge_length, debug_dir=os.path.join(path, "debug_refine"))
     refined_results = refined_chessboard.calibrate_camera(refined_images_paths)
 
-    np.savetxt(os.path.join(path, 'results', 'cam_mtx_refined.txt'), refined_results['intrinsic_matrix'], fmt='%.5f', delimiter=',')
-    np.savetxt(os.path.join(path, 'results', 'cam_dist_refined.txt'), refined_results['distortion_coefficients'], fmt='%.5f', delimiter=',')
+    np.savetxt(os.path.join(path, 'results', 'rms_refined.txt'), np.full(1, refined_results['rms']), fmt='%.8f', delimiter=',')
+    np.savetxt(os.path.join(path, 'results', 'cam_mtx_refined.txt'), refined_results['intrinsic_matrix'], fmt='%.8f', delimiter=',')
+    np.savetxt(os.path.join(path, 'results', 'cam_dist_refined.txt'), refined_results['distortion_coefficients'], fmt='%.8f', delimiter=',')
 
     h, w = cv2.imread(images_path_list[0], 0).shape[:2]
-    refined_newcammtx, refined_roi = cv2.getOptimalNewCameraMatrix(refined_results['intrinsic_matrix'], refined_results['distortion_coefficients'], (w,h), 1, (w,h))
+    refined_newcammtx, refined_roi = cv2.getOptimalNewCameraMatrix(refined_results['intrinsic_matrix'], refined_results['distortion_coefficients'], (w,h), alpha, (w,h))
     refined_mapx, refined_mapy = cv2.initUndistortRectifyMap(refined_results['intrinsic_matrix'], refined_results['distortion_coefficients'], None, refined_newcammtx, (w,h), 5)
     print("New Refined Camera Matrix: \n")
     print(refined_newcammtx)
 
-    np.savetxt(os.path.join(path, 'results', 'cam_mtx_new_refined.txt'), refined_newcammtx, fmt='%.5f', delimiter=',')
+    np.savetxt(os.path.join(path, 'results', 'cam_mtx_new_refined.txt'), refined_newcammtx, fmt='%.8f', delimiter=',')
     np.savetxt(os.path.join(path, 'results', 'roi_refined.txt'), refined_roi, fmt='%i', delimiter=',')
 
     for image in images_path_list:

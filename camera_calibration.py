@@ -357,6 +357,8 @@ class Camera_Calibration_API:
                              "rms":self.rms,
                              "intrinsic_matrix":self.camera_matrix,
                              "distortion_coefficients":self.dist_coefs,
+                             "rvecs":rvecs,
+                             "tvecs":tvecs,
                              }
         
         return(result_dictionary)
